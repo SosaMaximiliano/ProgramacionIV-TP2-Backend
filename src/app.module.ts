@@ -3,13 +3,15 @@ import { AppController } from './app.controller.js';
 import { AppService } from './app.service.js';
 import { MongooseModule } from '@nestjs/mongoose';
 import { UsuarioModule } from './usuario/usuario.module.js';
+import { PublicacionModule } from './publicacion/publicacion/publicacion.module.js';
+import { ConfigModule } from '@nestjs/config';
 
 @Module({
   imports: [
-    MongooseModule.forRoot(
-      'mongodb+srv://user:MhiGxfdiQ23KJz5L@practicamongo.xmshni6.mongodb.net/',
-    ),
+    ConfigModule.forRoot({ isGlobal: true }),
+    MongooseModule.forRoot(process.env.MONGODB_URI!),
     UsuarioModule,
+    PublicacionModule,
   ],
   controllers: [AppController],
   providers: [AppService],

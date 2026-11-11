@@ -1,8 +1,8 @@
-import { Usuario } from './entities/usuario.entity.js';
 import { Module } from '@nestjs/common';
+import { MongooseModule } from '@nestjs/mongoose';
+import { Usuario } from './entities/usuario.entity.js';
 import { UsuarioService } from './usuario.service.js';
 import { UsuarioController } from './usuario.controller.js';
-import { MongooseModule } from '@nestjs/mongoose';
 import { UsuarioSchema } from './entities/usuario.entity.js';
 
 @Module({
