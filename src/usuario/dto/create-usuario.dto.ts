@@ -45,4 +45,6 @@ export class CreateUsuarioDto {
 
   @IsByteLength(0, 100)
   descripcion: string;
+
+  imagenPerfil?: string;
 }
