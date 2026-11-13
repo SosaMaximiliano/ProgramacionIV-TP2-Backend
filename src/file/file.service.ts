@@ -2,15 +2,18 @@ import { Injectable } from '@nestjs/common';
 import { parse } from 'node:path';
 import { v2 as cloudinary } from 'cloudinary';
 import { error } from 'node:console';
-
-cloudinary.config({
-  cloud_name: 'juvuvlpg',
-  api_key: '752228819842768',
-  api_secret: 'aesMiLQmjmeuyjRwuTsnzzj9I_E',
-});
+import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class FileService {
+  constructor(config: ConfigService) {
+    cloudinary.config({
+      cloud_name: config.getOrThrow<string>('CLOUDINARY_CLOUD_NAME'),
+      api_key: config.getOrThrow<string>('CLOUDINARY_API_KEY'),
+      api_secret: config.getOrThrow<string>('CLOUDINARY_API_SECRET'),
+    });
+  }
+
   cloudinaryUploader(archivo: Express.Multer.File): Promise<string> {
     return new Promise<string>((resolve, reject) => {
       const stream = cloudinary.uploader.upload_stream(
