@@ -13,4 +13,6 @@ export class CreatePublicacionDto {
 
   @IsMongoId()
   usuario: string;
+
+  imagenPublicacion: string;
 }

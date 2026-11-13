@@ -5,6 +5,7 @@ import { PublicacionService } from './publicacion.service.js';
 import { PublicacionController } from './publicacion.controller.js';
 import { PublicacionSchema } from './entities/publicacion.entity.js';
 import { AuthModule } from '../../auth/auth.module.js';
+import { FileService } from '../../file/file.service.js';
 
 @Module({
   imports: [
@@ -14,6 +15,6 @@ import { AuthModule } from '../../auth/auth.module.js';
     AuthModule,
   ],
   controllers: [PublicacionController],
-  providers: [PublicacionService],
+  providers: [PublicacionService, FileService],
 })
 export class PublicacionModule {}

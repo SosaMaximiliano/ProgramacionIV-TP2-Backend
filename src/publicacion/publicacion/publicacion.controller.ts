@@ -15,51 +15,43 @@ import { PublicacionService } from './publicacion.service.js';
 import { CreatePublicacionDto } from './dto/create-publicacion.dto.js';
 import { UpdatePublicacionDto } from './dto/update-publicacion.dto.js';
 import { FileInterceptor } from '@nestjs/platform-express';
-import { diskStorage } from 'multer';
+import { memoryStorage, diskStorage } from 'multer';
 import { extname } from 'path';
 import { BadRequestException, Query } from '@nestjs/common';
 import { UseGuards } from '@nestjs/common';
 import { JwtAuthGuard } from '../../auth/jwt-auth.guard.js';
+import { FileService } from '../../file/file.service.js';
 
 @Controller('publicaciones')
 export class PublicacionController {
-  constructor(private readonly publicacionService: PublicacionService) {}
+  constructor(
+    private readonly publicacionService: PublicacionService,
+    private fileService: FileService,
+  ) {}
 
   @Post('nueva')
   @UseInterceptors(
     FileInterceptor('imagenPublicacion', {
-      storage: diskStorage({
-        destination: './uploads/posts',
-        filename: (_request, file, callback) => {
-          const nombreArchivo = `${Date.now()}${extname(file.originalname)}`;
-          callback(null, nombreArchivo);
-        },
-      }),
+      storage: memoryStorage(),
     }),
   )
-  create(
+  async create(
     @Body() createPublicacionDto: CreatePublicacionDto,
-    @UploadedFile(
-      new ParseFilePipe({
-        validators: [new MaxFileSizeValidator({ maxSize: 5 * 1024 * 1024 })],
-        fileIsRequired: false,
-      }),
-    )
+    @UploadedFile()
     archivo: Express.Multer.File,
   ) {
-    if (
-      archivo &&
-      !['image/jpeg', 'image/png', 'image/webp'].includes(archivo.mimetype)
-    ) {
-      throw new BadRequestException('La imagen debe ser JPG, PNG o WEBP.');
+    if (archivo) {
+      createPublicacionDto.imagenPublicacion =
+        await this.fileService.cloudinaryUploader(archivo);
     }
+
     return this.publicacionService.create(
       createPublicacionDto,
       archivo?.filename,
     );
   }
 
-  // @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard)
   @Get()
   findAll(
     @Query('orden') orden = 'fecha',
@@ -69,12 +61,7 @@ export class PublicacionController {
     return this.publicacionService.findAll(orden, +offset, +limit);
   }
 
-  // @Get('usuario/:userId')
-  // findAllByUser(@Param('userId') userId: string) {
-  //   return this.publicacionService.findAllByUser(userId);
-  // }
-
-  // @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard)
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.publicacionService.findOne(id);
