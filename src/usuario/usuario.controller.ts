@@ -36,10 +36,12 @@ export class UsuarioController {
     archivo?: Express.Multer.File,
   ) {
     if (archivo) {
-      createUsuarioDto.imagenPerfil =
-        await this.fileService.cloudinaryUploader(archivo);
+      createUsuarioDto.imagenPerfil = await this.fileService.cloudinaryUploader(
+        archivo,
+        'usuarios',
+      );
     }
-    return this.usuarioService.create(createUsuarioDto, archivo?.filename);
+    return this.usuarioService.create(createUsuarioDto);
   }
 
   // **************** LOGIN ******************

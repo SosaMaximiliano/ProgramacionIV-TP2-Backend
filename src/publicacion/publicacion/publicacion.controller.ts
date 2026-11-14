@@ -21,6 +21,13 @@ import { BadRequestException, Query } from '@nestjs/common';
 import { UseGuards } from '@nestjs/common';
 import { JwtAuthGuard } from '../../auth/jwt-auth.guard.js';
 import { FileService } from '../../file/file.service.js';
+import { Req } from '@nestjs/common';
+import { Request } from 'express';
+import { request } from 'http';
+
+type RequestConUsuario = Request & {
+  user: { sub: string; perfil: string };
+};
 
 @Controller('publicaciones')
 export class PublicacionController {
@@ -30,6 +37,7 @@ export class PublicacionController {
   ) {}
 
   @Post('nueva')
+  @UseGuards(JwtAuthGuard)
   @UseInterceptors(
     FileInterceptor('imagenPublicacion', {
       storage: memoryStorage(),
@@ -38,21 +46,22 @@ export class PublicacionController {
   async create(
     @Body() createPublicacionDto: CreatePublicacionDto,
     @UploadedFile()
-    archivo: Express.Multer.File,
+    archivo: Express.Multer.File | undefined,
+    @Req() request: RequestConUsuario,
   ) {
     if (archivo) {
       createPublicacionDto.imagenPublicacion =
-        await this.fileService.cloudinaryUploader(archivo);
+        await this.fileService.cloudinaryUploader(archivo, 'publicaciones');
     }
 
     return this.publicacionService.create(
       createPublicacionDto,
-      archivo?.filename,
+      request.user.sub,
     );
   }
 
-  @UseGuards(JwtAuthGuard)
   @Get()
+  @UseGuards(JwtAuthGuard)
   findAll(
     @Query('orden') orden = 'fecha',
     @Query('offset') offset = '0',
@@ -61,8 +70,14 @@ export class PublicacionController {
     return this.publicacionService.findAll(orden, +offset, +limit);
   }
 
+  @Get('usuario/:id/ultimas')
   @UseGuards(JwtAuthGuard)
+  traerUltimasPorUsuario(@Param('id') idUsuario: string) {
+    return this.publicacionService.traerUltimasPorUsuario(idUsuario);
+  }
+
   @Get(':id')
+  @UseGuards(JwtAuthGuard)
   findOne(@Param('id') id: string) {
     return this.publicacionService.findOne(id);
   }
@@ -76,7 +91,26 @@ export class PublicacionController {
   }
 
   @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.publicacionService.remove(id);
+  @UseGuards(JwtAuthGuard)
+  remove(@Param('id') id: string, @Req() request: RequestConUsuario) {
+    return this.publicacionService.remove(
+      id,
+      request.user.sub,
+      request.user.perfil,
+    );
+  }
+
+  //LIKES
+
+  @Post(':id/likes')
+  @UseGuards(JwtAuthGuard)
+  agregarLike(@Param('id') idPost: string, @Req() request: RequestConUsuario) {
+    return this.publicacionService.agregarLike(idPost, request.user.sub);
+  }
+
+  @Delete(':id/likes')
+  @UseGuards(JwtAuthGuard)
+  quitarLike(@Param('id') idPost: string, @Req() request: RequestConUsuario) {
+    return this.publicacionService.quitarLike(idPost, request.user.sub);
   }
 }

@@ -1,9 +1,13 @@
-import { Injectable } from '@nestjs/common';
 import { CreatePublicacionDto } from './dto/create-publicacion.dto.js';
 import { UpdatePublicacionDto } from './dto/update-publicacion.dto.js';
 import { Model } from 'mongoose';
 import { InjectModel } from '@nestjs/mongoose';
 import { Publicacion } from './entities/publicacion.entity.js';
+import {
+  ForbiddenException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 
 @Injectable()
 export class PublicacionService {
@@ -13,16 +17,12 @@ export class PublicacionService {
     private readonly publicacionModel: Model<Publicacion>,
   ) {}
 
-  async create(
-    createPublicacionDto: CreatePublicacionDto,
-    nombreArchivo?: string,
-  ) {
+  async create(createPublicacionDto: CreatePublicacionDto, idUsuario: string) {
     try {
-      const publicacionCreada = await this.publicacionModel.create({
+      return await this.publicacionModel.create({
         ...createPublicacionDto,
-        imagenPublicacion: nombreArchivo,
+        usuario: idUsuario,
       });
-      return publicacionCreada;
     } catch (error) {
       console.log(error);
       throw error;
@@ -87,7 +87,61 @@ export class PublicacionService {
     );
   }
 
-  async remove(id: string) {
-    return await this.publicacionModel.findByIdAndDelete(id);
+  async remove(idPost: string, idUsuario: string, perfil: string) {
+    const publicacion = await this.publicacionModel.findById(idPost);
+
+    if (!publicacion || !publicacion.estaActivo) {
+      throw new NotFoundException('No se encontró la publicación.');
+    }
+
+    const esAutor = publicacion.usuario.toString() === idUsuario;
+    const esAdministrador = perfil === 'administrador';
+
+    if (!esAutor && !esAdministrador) {
+      throw new ForbiddenException(
+        'Sólo el autor o un administrador puede eliminar esta publicación.',
+      );
+    }
+
+    publicacion.estaActivo = false;
+    return await publicacion.save();
+  }
+
+  ////////////////////////////////////////////////////////////////////////////////////////////
+
+  async agregarLike(idPost: string, idUsuario: string) {
+    const publicacion = await this.publicacionModel
+      .findByIdAndUpdate(
+        idPost,
+        { $addToSet: { likes: idUsuario } },
+        { new: true },
+      )
+      .populate('usuario', 'nombre apellido usuario imagenPerfil');
+
+    if (!publicacion) {
+      throw new NotFoundException('No se encontró la publicación.');
+    }
+
+    return publicacion;
+  }
+
+  async quitarLike(idPost: string, idUsuario: string) {
+    const publicacion = await this.publicacionModel
+      .findByIdAndUpdate(idPost, { $pull: { likes: idUsuario } }, { new: true })
+      .populate('usuario', 'nombre apellido usuario imagenPerfil');
+
+    if (!publicacion) {
+      throw new NotFoundException('No se encontró la publicación.');
+    }
+
+    return publicacion;
+  }
+
+  async traerUltimasPorUsuario(idUsuario: string) {
+    return await this.publicacionModel
+      .find({ usuario: idUsuario, estaActivo: true })
+      .sort({ fecha: -1 })
+      .limit(3)
+      .populate('usuario', 'nombre apellido usuario imagenPerfil');
   }
 }

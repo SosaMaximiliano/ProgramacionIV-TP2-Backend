@@ -19,13 +19,12 @@ export class UsuarioService {
   ) {}
 
   // REGISTRO
-  async create(createUsuarioDto: CreateUsuarioDto, nombreArchivo?: string) {
+  async create(createUsuarioDto: CreateUsuarioDto) {
     try {
       const passwordHasheado = await bcrypt.hash(createUsuarioDto.password, 10);
       const usuarioCreado = await this.usuarioModel.create({
         ...createUsuarioDto,
         password: passwordHasheado,
-        imagenPerfil: nombreArchivo,
       });
       const token = await this.jwtService.signAsync({
         sub: usuarioCreado?._id.toString(),
@@ -62,10 +61,12 @@ export class UsuarioService {
   }
 
   // LOGIN
-  async login(usuario: string, password: string) {
+  async login(identificador: string, password: string) {
     //Model permite conectar con Mongo y hacer la query
     const usuarioEncontrado = await this.usuarioModel
-      .findOne({ usuario })
+      .findOne({
+        $or: [{ usuario: identificador }, { correo: identificador }],
+      })
       .select('+password');
 
     if (

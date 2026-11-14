@@ -11,8 +11,5 @@ export class CreatePublicacionDto {
   @MaxLength(2000)
   descripcion: string;
 
-  @IsMongoId()
-  usuario: string;
-
   imagenPublicacion: string;
 }

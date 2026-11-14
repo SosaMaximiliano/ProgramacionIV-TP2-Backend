@@ -1,7 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { parse } from 'node:path';
 import { v2 as cloudinary } from 'cloudinary';
-import { error } from 'node:console';
 import { ConfigService } from '@nestjs/config';
 
 @Injectable()
@@ -14,11 +13,14 @@ export class FileService {
     });
   }
 
-  cloudinaryUploader(archivo: Express.Multer.File): Promise<string> {
+  cloudinaryUploader(
+    archivo: Express.Multer.File,
+    folder: string,
+  ): Promise<string> {
     return new Promise<string>((resolve, reject) => {
       const stream = cloudinary.uploader.upload_stream(
         {
-          folder: 'usuarios',
+          folder: folder,
           public_id: parse(archivo.originalname).name,
           resource_type: 'image',
         },
@@ -33,6 +35,7 @@ export class FileService {
         },
       );
       stream.on('error', (error: Error) => {
+        console.log(error);
         reject(new Error('No se pudo enviar la foto al servidor.'));
       });
       stream.end(archivo.buffer);
