@@ -23,7 +23,10 @@ export class Usuario {
   @Prop({ default: 'usuario' })
   perfil: string;
 
-  @Prop()
+  @Prop({
+    default:
+      'https://res.cloudinary.com/juvuvlpg/image/upload/v1794835845/avatar-default.svg',
+  })
   imagenPerfil?: string;
 
   @Prop()
