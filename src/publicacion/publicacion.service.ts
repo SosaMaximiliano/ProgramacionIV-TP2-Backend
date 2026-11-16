@@ -8,6 +8,7 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
+import { CreateComentarioDto } from '../comentario/dto/create-comentario.dto.js';
 
 @Injectable()
 export class PublicacionService {
@@ -144,4 +145,6 @@ export class PublicacionService {
       .limit(3)
       .populate('usuario', 'nombre apellido usuario imagenPerfil');
   }
+
+  ////////////////////////////////////////////////////////////////////////////////////////////
 }

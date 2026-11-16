@@ -19,11 +19,13 @@ import { memoryStorage, diskStorage } from 'multer';
 import { extname } from 'path';
 import { BadRequestException, Query } from '@nestjs/common';
 import { UseGuards } from '@nestjs/common';
-import { JwtAuthGuard } from '../../auth/jwt-auth.guard.js';
-import { FileService } from '../../file/file.service.js';
+import { JwtAuthGuard } from '../auth/jwt-auth.guard.js';
+import { FileService } from '../file/file.service.js';
 import { Req } from '@nestjs/common';
 import { Request } from 'express';
 import { request } from 'http';
+import { CreateComentarioDto } from '../comentario/dto/create-comentario.dto.js';
+import { ComentarioService } from '../comentario/comentario.service.js';
 
 type RequestConUsuario = Request & {
   user: { sub: string; perfil: string };
@@ -33,6 +35,7 @@ type RequestConUsuario = Request & {
 export class PublicacionController {
   constructor(
     private readonly publicacionService: PublicacionService,
+    private comentarioService: ComentarioService,
     private fileService: FileService,
   ) {}
 
@@ -112,5 +115,24 @@ export class PublicacionController {
   @UseGuards(JwtAuthGuard)
   quitarLike(@Param('id') idPost: string, @Req() request: RequestConUsuario) {
     return this.publicacionService.quitarLike(idPost, request.user.sub);
+  }
+
+  //COMENTARIOS
+
+  @Post(':id/comentarios')
+  @UseGuards(JwtAuthGuard)
+  crearComentario(
+    @Param('id') idPost: string,
+    @Body() dto: CreateComentarioDto,
+    @Req() request: RequestConUsuario,
+  ) {
+    return this.comentarioService.crear(idPost, dto, request.user.sub);
+  }
+
+  @Get(':id/comentarios')
+  @UseGuards(JwtAuthGuard)
+  obtenerComentarios(@Param('id') idPost: string) {
+    console.log('GET comentarios', idPost);
+    return this.comentarioService.obtenerPorPublicacion(idPost);
   }
 }
