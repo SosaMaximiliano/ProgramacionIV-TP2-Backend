@@ -26,6 +26,7 @@ import { Request } from 'express';
 import { request } from 'http';
 import { CreateComentarioDto } from '../comentario/dto/create-comentario.dto.js';
 import { ComentarioService } from '../comentario/comentario.service.js';
+import { UpdateComentarioDto } from '../comentario/dto/update-comentario.dto.js';
 
 type RequestConUsuario = Request & {
   user: { sub: string; perfil: string };
@@ -140,6 +141,22 @@ export class PublicacionController {
       idPost,
       +offset,
       +limit,
+    );
+  }
+
+  @Patch(':id/comentarios/:idComentario')
+  @UseGuards(JwtAuthGuard)
+  actualizarComentario(
+    @Param('id') idPost: string,
+    @Param('idComentario') idComentario: string,
+    @Body() dto: UpdateComentarioDto,
+    @Req() request: RequestConUsuario,
+  ) {
+    return this.comentarioService.actualizar(
+      idPost,
+      idComentario,
+      dto,
+      request.user.sub,
     );
   }
 }

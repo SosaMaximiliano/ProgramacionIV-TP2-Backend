@@ -1,4 +1,9 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  ForbiddenException,
+  BadRequestException,
+} from '@nestjs/common';
 import { CreateComentarioDto } from './dto/create-comentario.dto.js';
 import { UpdateComentarioDto } from './dto/update-comentario.dto.js';
 import { InjectModel } from '@nestjs/mongoose';
@@ -52,19 +57,47 @@ export class ComentarioService {
       .exec();
   }
 
-  findAll() {
-    return `This action returns all comentario`;
-  }
+  async actualizar(
+    idPost: string,
+    idComentario: string,
+    dto: UpdateComentarioDto,
+    idUsuario: string,
+  ) {
+    if (!dto.comentario?.trim()) {
+      throw new BadRequestException('El comentario no puede quedar vacío.');
+    }
 
-  findOne(id: number) {
-    return `This action returns a #${id} comentario`;
-  }
+    //Busco la publicación
+    const publicacion = await this.publicacionModel.findOne({
+      _id: idPost,
+      estaActivo: true,
+    });
 
-  update(id: number, updateComentarioDto: UpdateComentarioDto) {
-    return `This action updates a #${id} comentario`;
-  }
+    if (!publicacion) {
+      throw new NotFoundException('No se encontró la publicación.');
+    }
 
-  remove(id: number) {
-    return `This action removes a #${id} comentario`;
+    //Busco el comentario
+    const comentario = await this.comentarioModel.findOne({
+      _id: idComentario,
+      publicacion: publicacion._id,
+    });
+
+    if (!comentario) {
+      throw new NotFoundException('No se encontró el comentario.');
+    }
+
+    //Valido que el comentario corresponda al usuario recibido
+    if (comentario.usuario.toString() !== idUsuario) {
+      throw new ForbiddenException(
+        'Sólo quien escribió el comentario puede editarlo.',
+      );
+    }
+
+    comentario.comentario = dto.comentario.trim();
+    comentario.modificado = true;
+
+    await comentario.save();
+    return comentario.populate('usuario', 'usuario imagenPerfil');
   }
 }
