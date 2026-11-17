@@ -73,9 +73,15 @@ export class PublicacionService {
   // }
 
   async findOne(id: string) {
-    return this.publicacionModel
-      .findById(id)
+    const publicacion = await this.publicacionModel
+      .findOne({ _id: id, estaActivo: true })
       .populate('usuario', 'nombre apellido usuario imagenPerfil');
+
+    if (!publicacion) {
+      throw new NotFoundException('No se encontró la publicación.');
+    }
+
+    return publicacion;
   }
 
   async update(id: string, updatePublicacionDto: UpdatePublicacionDto) {

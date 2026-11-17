@@ -29,15 +29,26 @@ export class ComentarioService {
     return comentario.populate('usuario', 'usuario imagenPerfil');
   }
 
-  async obtenerPorPublicacion(idPost: string) {
+  async obtenerPorPublicacion(idPost: string, offset: number, limit: number) {
     const publicacion = await this.publicacionModel.findById(idPost);
+
     if (!publicacion || !publicacion.estaActivo) {
       throw new NotFoundException('La publicación no existe.');
     }
+
+    const offsetSeguro = Number.isFinite(offset)
+      ? Math.max(0, Math.floor(offset))
+      : 0;
+    const limitSeguro = Number.isFinite(limit)
+      ? Math.min(Math.max(Math.floor(limit), 1), 50)
+      : 10;
+
     return this.comentarioModel
       .find({ publicacion: new Types.ObjectId(idPost) })
       .populate('usuario', 'usuario imagenPerfil')
       .sort({ fecha: -1 })
+      .skip(offsetSeguro)
+      .limit(limitSeguro)
       .exec();
   }
 

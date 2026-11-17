@@ -131,8 +131,15 @@ export class PublicacionController {
 
   @Get(':id/comentarios')
   @UseGuards(JwtAuthGuard)
-  obtenerComentarios(@Param('id') idPost: string) {
-    console.log('GET comentarios', idPost);
-    return this.comentarioService.obtenerPorPublicacion(idPost);
+  obtenerComentarios(
+    @Param('id') idPost: string,
+    @Query('offset') offset = '0',
+    @Query('limit') limit = '10',
+  ) {
+    return this.comentarioService.obtenerPorPublicacion(
+      idPost,
+      +offset,
+      +limit,
+    );
   }
 }
