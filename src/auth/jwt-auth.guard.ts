@@ -8,10 +8,10 @@ import { JwtService } from '@nestjs/jwt';
 import { Request } from 'express';
 
 //*********************************************/
-//Esto dejaría una forma => request = {user:{sub: string, perfil: string}}
+//La petición autenticada tendrá user = { id: string, perfil: string }.
 
 type DatosDelToken = {
-  sub: string;
+  id: string;
   perfil: string;
 };
 

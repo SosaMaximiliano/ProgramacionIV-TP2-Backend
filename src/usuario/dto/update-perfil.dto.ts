@@ -1,6 +1,9 @@
 import { PartialType, PickType } from '@nestjs/mapped-types';
 import { IsOptional, IsString } from 'class-validator';
-import { CreateUsuarioDto } from './create-usuario.dto.js';
+import {
+  CreateUsuarioAdminDto,
+  CreateUsuarioDto,
+} from './create-usuario.dto.js';
 
 export class UpdatePerfilDto extends PartialType(
   PickType(CreateUsuarioDto, [
@@ -16,3 +19,5 @@ export class UpdatePerfilDto extends PartialType(
   @IsString()
   imagenPerfil?: string;
 }
+
+export class UpdatePerfilAdminDto extends CreateUsuarioAdminDto {}

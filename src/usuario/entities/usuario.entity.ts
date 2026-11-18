@@ -31,6 +31,9 @@ export class Usuario {
 
   @Prop()
   descripcion?: string;
+
+  @Prop({ default: true })
+  estaHabilitado: boolean;
 }
 
 export const UsuarioSchema = SchemaFactory.createForClass(Usuario);

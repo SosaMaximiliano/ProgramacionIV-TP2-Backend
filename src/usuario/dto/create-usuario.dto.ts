@@ -5,6 +5,7 @@ import {
   IsString,
   Matches,
 } from 'class-validator';
+import { IsIn } from 'class-validator';
 
 export class CreateUsuarioDto {
   @IsNotEmpty()
@@ -47,4 +48,10 @@ export class CreateUsuarioDto {
   descripcion: string;
 
   imagenPerfil?: string;
+}
+
+export class CreateUsuarioAdminDto extends CreateUsuarioDto {
+  @IsIn(['usuario', 'administrador'])
+  perfil: 'usuario' | 'administrador';
+  estaHabilitado: boolean;
 }

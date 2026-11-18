@@ -25,13 +25,17 @@ export class UsuarioService {
       ]);
 
       if (correoOcupado && usuarioOcupado) {
-        throw new ConflictException('El correo y el nombre de usuario ya están registrados.');
+        throw new ConflictException(
+          'El correo y el nombre de usuario ya están registrados.',
+        );
       }
       if (correoOcupado) {
         throw new ConflictException('Ese correo ya está registrado.');
       }
       if (usuarioOcupado) {
-        throw new ConflictException('Ese nombre de usuario ya está registrado.');
+        throw new ConflictException(
+          'Ese nombre de usuario ya está registrado.',
+        );
       }
 
       const passwordHasheado = await bcrypt.hash(createUsuarioDto.password, 10);
@@ -86,7 +90,9 @@ export class UsuarioService {
         'code' in error &&
         error.code === 11000
       ) {
-        throw new ConflictException('El correo o nombre de usuario ya está registrado.');
+        throw new ConflictException(
+          'El correo o nombre de usuario ya está registrado.',
+        );
       }
       throw error;
     }
@@ -94,5 +100,25 @@ export class UsuarioService {
 
   async remove(id: string) {
     return await this.usuarioModel.findByIdAndDelete(id);
+  }
+
+  async deshabilitar(id: string) {
+    const usuario = await this.findOne(id);
+    if (!usuario) {
+      throw new NotFoundException('El usuario no existe.');
+    }
+    return await this.usuarioModel.findByIdAndUpdate(id, {
+      estaHabilitado: false,
+    });
+  }
+
+  async habilitar(id: string) {
+    const usuario = await this.findOne(id);
+    if (!usuario) {
+      throw new NotFoundException('El usuario no existe.');
+    }
+    return await this.usuarioModel.findByIdAndUpdate(id, {
+      estaHabilitado: true,
+    });
   }
 }

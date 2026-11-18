@@ -8,6 +8,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard.js';
 import { FileService } from '../file/file.service.js';
 import { UsuarioSchema } from './entities/usuario.entity.js';
+import { AdminGuard } from '../auth/admin.guard/admin.guard.js';
 
 @Module({
   imports: [
@@ -21,7 +22,7 @@ import { UsuarioSchema } from './entities/usuario.entity.js';
     }),
   ],
   controllers: [UsuarioController],
-  providers: [UsuarioService, JwtAuthGuard, FileService],
+  providers: [UsuarioService, JwtAuthGuard, FileService, AdminGuard],
   exports: [UsuarioService, MongooseModule],
 })
 export class UsuarioModule {}

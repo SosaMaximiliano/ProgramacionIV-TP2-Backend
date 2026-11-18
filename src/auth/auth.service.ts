@@ -27,6 +27,7 @@ export class AuthService {
     const usuarioEncontrado = await this.usuarioModel
       .findOne({
         $or: [{ usuario: identificador }, { correo: identificador }],
+        $and: [{ estaHabilitado: true }],
       })
       .select('+password');
 
@@ -42,11 +43,23 @@ export class AuthService {
     return this.crearRespuestaAutenticacion(usuarioEncontrado);
   }
 
+  async autorizar(id: string) {
+    const usuario = await this.usuarioModel
+      .findOne({ _id: id, estaHabilitado: true })
+      .select('-password');
+
+    if (!usuario) {
+      throw new UnauthorizedException('El usuario del token ya no existe.');
+    }
+
+    return usuario;
+  }
+
   private async crearRespuestaAutenticacion(
     usuario: HydratedDocument<Usuario>,
   ) {
     const token = await this.jwtService.signAsync({
-      sub: usuario._id.toString(),
+      id: usuario._id.toString(),
       perfil: usuario.perfil,
     });
 
@@ -64,5 +77,13 @@ export class AuthService {
         imagenPerfil: usuario.imagenPerfil,
       },
     };
+  }
+
+  async refrescar(payload: { id: string; perfil: string }) {
+    const access_token = await this.jwtService.signAsync({
+      id: payload.id,
+      perfil: payload.perfil,
+    });
+    return { access_token };
   }
 }

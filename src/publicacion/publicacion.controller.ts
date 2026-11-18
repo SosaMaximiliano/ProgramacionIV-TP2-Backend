@@ -10,6 +10,7 @@ import {
   UploadedFile,
   ParseFilePipe,
   MaxFileSizeValidator,
+  Put,
 } from '@nestjs/common';
 import { PublicacionService } from './publicacion.service.js';
 import { CreatePublicacionDto } from './dto/create-publicacion.dto.js';
@@ -29,7 +30,7 @@ import { ComentarioService } from '../comentario/comentario.service.js';
 import { UpdateComentarioDto } from '../comentario/dto/update-comentario.dto.js';
 
 type RequestConUsuario = Request & {
-  user: { sub: string; perfil: string };
+  user: { id: string; perfil: string };
 };
 
 @Controller('publicaciones')
@@ -60,7 +61,7 @@ export class PublicacionController {
 
     return this.publicacionService.create(
       createPublicacionDto,
-      request.user.sub,
+      request.user.id,
     );
   }
 
@@ -99,7 +100,7 @@ export class PublicacionController {
   remove(@Param('id') id: string, @Req() request: RequestConUsuario) {
     return this.publicacionService.remove(
       id,
-      request.user.sub,
+      request.user.id,
       request.user.perfil,
     );
   }
@@ -109,13 +110,13 @@ export class PublicacionController {
   @Post(':id/likes')
   @UseGuards(JwtAuthGuard)
   agregarLike(@Param('id') idPost: string, @Req() request: RequestConUsuario) {
-    return this.publicacionService.agregarLike(idPost, request.user.sub);
+    return this.publicacionService.agregarLike(idPost, request.user.id);
   }
 
   @Delete(':id/likes')
   @UseGuards(JwtAuthGuard)
   quitarLike(@Param('id') idPost: string, @Req() request: RequestConUsuario) {
-    return this.publicacionService.quitarLike(idPost, request.user.sub);
+    return this.publicacionService.quitarLike(idPost, request.user.id);
   }
 
   //COMENTARIOS
@@ -127,7 +128,7 @@ export class PublicacionController {
     @Body() dto: CreateComentarioDto,
     @Req() request: RequestConUsuario,
   ) {
-    return this.comentarioService.crear(idPost, dto, request.user.sub);
+    return this.comentarioService.crear(idPost, dto, request.user.id);
   }
 
   @Get(':id/comentarios')
@@ -144,7 +145,7 @@ export class PublicacionController {
     );
   }
 
-  @Patch(':id/comentarios/:idComentario')
+  @Put(':id/comentarios/:idComentario')
   @UseGuards(JwtAuthGuard)
   actualizarComentario(
     @Param('id') idPost: string,
@@ -156,7 +157,7 @@ export class PublicacionController {
       idPost,
       idComentario,
       dto,
-      request.user.sub,
+      request.user.id,
     );
   }
 }

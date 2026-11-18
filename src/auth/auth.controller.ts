@@ -3,7 +3,9 @@ import {
   Controller,
   Post,
   UploadedFile,
+  UseGuards,
   UseInterceptors,
+  Req,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { memoryStorage } from 'multer';
@@ -11,7 +13,16 @@ import { AuthService } from './auth.service.js';
 import { FileService } from '../file/file.service.js';
 import { CreateUsuarioDto } from '../usuario/dto/create-usuario.dto.js';
 import { LoginUsuarioDto } from '../usuario/dto/login-usuario.dto.js';
+import { Request } from 'express';
+import { JwtAuthGuard } from './jwt-auth.guard.js';
 
+//Creo un tipo con la forma Request + usuario.
+type RequestConUsuario = Request & {
+  user: {
+    id: string;
+    perfil: string;
+  };
+};
 @Controller('auth')
 export class AuthController {
   constructor(
@@ -45,5 +56,19 @@ export class AuthController {
       loginUsuarioDto.identificador,
       loginUsuarioDto.password,
     );
+  }
+
+  @Post('autorizar')
+  @UseGuards(JwtAuthGuard)
+  autorizar(@Req() request: RequestConUsuario) {
+    return this.authService.autorizar(request.user.id);
+  }
+
+  @Post('refrescar')
+  @UseGuards(JwtAuthGuard)
+  //Recibo la petición y la guardo en request.
+  //@Req
+  refrescar(@Req() request: RequestConUsuario) {
+    return this.authService.refrescar(request.user);
   }
 }
