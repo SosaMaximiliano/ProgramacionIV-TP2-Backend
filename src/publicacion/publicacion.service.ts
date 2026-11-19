@@ -145,8 +145,11 @@ export class PublicacionService {
   }
 
   async traerUltimasPorUsuario(idUsuario: string) {
-    return await this.publicacionModel
-      .find({ usuario: idUsuario, estaActivo: true })
+    return this.publicacionModel
+      .find({
+        usuario: new Types.ObjectId(idUsuario),
+        estaActivo: true,
+      })
       .sort({ fecha: -1 })
       .limit(3)
       .populate('usuario', 'nombre apellido usuario imagenPerfil');
