@@ -9,7 +9,6 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { CreateComentarioDto } from '../comentario/dto/create-comentario.dto.js';
 
 @Injectable()
 export class PublicacionService {
