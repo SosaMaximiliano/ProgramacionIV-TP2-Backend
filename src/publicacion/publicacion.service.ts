@@ -3,6 +3,7 @@ import { UpdatePublicacionDto } from './dto/update-publicacion.dto.js';
 import { Model } from 'mongoose';
 import { InjectModel } from '@nestjs/mongoose';
 import { Publicacion } from './entities/publicacion.entity.js';
+import { Types } from 'mongoose';
 import {
   ForbiddenException,
   Injectable,
@@ -20,9 +21,9 @@ export class PublicacionService {
 
   async create(createPublicacionDto: CreatePublicacionDto, idUsuario: string) {
     try {
-      return await this.publicacionModel.create({
+      return this.publicacionModel.create({
         ...createPublicacionDto,
-        usuario: idUsuario,
+        usuario: new Types.ObjectId(idUsuario),
       });
     } catch (error) {
       console.log(error);
