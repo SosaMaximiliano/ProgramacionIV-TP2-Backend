@@ -1,53 +1,34 @@
-import {
-  Controller,
-  Get,
-  Post,
-  Body,
-  Patch,
-  Param,
-  Delete,
-  UseGuards,
-} from '@nestjs/common';
-import { EstadisticasService } from './estadisticas.service.js';
-import { CreateEstadisticaDto } from './dto/create-estadistica.dto.js';
-import { UpdateEstadisticaDto } from './dto/update-estadistica.dto.js';
-import { JwtAuthGuard } from '../auth/jwt-auth.guard.js';
+import { Controller, Get, Query, UseGuards } from '@nestjs/common';
 import { AdminGuard } from '../auth/admin.guard/admin.guard.js';
+import { JwtAuthGuard } from '../auth/jwt-auth.guard.js';
+import { EstadisticasService } from './estadisticas.service.js';
 
 @Controller('estadisticas')
+@UseGuards(JwtAuthGuard, AdminGuard)
 export class EstadisticasController {
   constructor(private readonly estadisticasService: EstadisticasService) {}
 
-  @Post()
-  @UseGuards(JwtAuthGuard, AdminGuard)
-  create(@Body() createEstadisticaDto: CreateEstadisticaDto) {
-    return this.estadisticasService.create(createEstadisticaDto);
-  }
-
-  @Get()
-  @UseGuards(JwtAuthGuard, AdminGuard)
-  findAll() {
-    return this.estadisticasService.findAll();
-  }
-
-  @Get(':id')
-  @UseGuards(JwtAuthGuard, AdminGuard)
-  findOne(@Param('id') id: string) {
-    return this.estadisticasService.findOne(+id);
-  }
-
-  @Patch(':id')
-  @UseGuards(JwtAuthGuard, AdminGuard)
-  update(
-    @Param('id') id: string,
-    @Body() updateEstadisticaDto: UpdateEstadisticaDto,
+  @Get('publicaciones-por-usuario')
+  publicacionesPorUsuario(
+    @Query('desde') desde: string,
+    @Query('hasta') hasta: string,
   ) {
-    return this.estadisticasService.update(+id, updateEstadisticaDto);
+    return this.estadisticasService.publicacionesPorUsuario(desde, hasta);
   }
 
-  @Delete(':id')
-  @UseGuards(JwtAuthGuard, AdminGuard)
-  remove(@Param('id') id: string) {
-    return this.estadisticasService.remove(+id);
+  @Get('comentarios-por-dia')
+  comentariosPorDia(
+    @Query('desde') desde: string,
+    @Query('hasta') hasta: string,
+  ) {
+    return this.estadisticasService.comentariosPorDia(desde, hasta);
+  }
+
+  @Get('comentarios-por-publicacion')
+  comentariosPorPublicacion(
+    @Query('desde') desde: string,
+    @Query('hasta') hasta: string,
+  ) {
+    return this.estadisticasService.comentariosPorPublicacion(desde, hasta);
   }
 }
